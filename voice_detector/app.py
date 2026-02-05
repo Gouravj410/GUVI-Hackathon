@@ -14,8 +14,8 @@ import logging
 import uuid
 from datetime import datetime, timedelta
 from collections import defaultdict
-from utils.audio import extract_features
-from database import Detection, SessionLocal, get_db
+from voice_detector.utils.audio import extract_features
+from voice_detector.database import Detection, SessionLocal, get_db
 from sqlalchemy.orm import Session
 
 # Configure logging
@@ -114,7 +114,7 @@ def _check_api_key(header_value: str | None, x_api_key: str | None) -> bool:
 
 
 def _rate_limit_check(client_ip: str) -> bool:
-    """Simple rate limiter: max 10 requests per minute per IP."""
+    """Simple rate limiter: max 100 requests per minute per IP (increased for testing)."""
     if not hasattr(_rate_limit_check, "clients"):
         _rate_limit_check.clients = {}
     
@@ -130,7 +130,7 @@ def _rate_limit_check(client_ip: str) -> bool:
     ]
     
     # Check limit
-    if len(_rate_limit_check.clients[client_ip]) >= 10:
+    if len(_rate_limit_check.clients[client_ip]) >= 100:
         return False
     
     _rate_limit_check.clients[client_ip].append(now)
@@ -250,8 +250,7 @@ async def detect_voice(
     Response:
     {
       "result": "AI_GENERATED" | "HUMAN",
-      "confidence": <float 0.0-1.0>,
-      "request_id": "<uuid>"
+      "confidence": <float 0.0-1.0>
     }
     """
     request_id = str(uuid.uuid4())
@@ -380,8 +379,7 @@ async def detect_voice(
 
         return {
             "result": result,
-            "confidence": confidence,
-            "request_id": request_id
+            "confidence": confidence
         }
 
     except HTTPException:
