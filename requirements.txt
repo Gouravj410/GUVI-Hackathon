@@ -5,3 +5,7 @@ numpy
 scikit-learn
 soundfile
 joblib
+pytest
+httpx
+sqlalchemy
+python-multipart
